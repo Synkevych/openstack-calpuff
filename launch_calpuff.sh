@@ -2,16 +2,19 @@
 
 set -e # exit on the first error
 
-. WRF-UNG.rc # load openstack environment variables
+. WRF-UNG.rc
 
-HASH=`date --utc +%Y%m%d%H%M`
-FLAVOR="m1.large"
-VM_NAME="calpuff_${FLAVOR/./_}_${HASH}"
-TIMER=60
+HASH=`date --utc +%Y%m%d%H%M`; FLAVOR="m1.large"; TIMER=60
 
-KEY_PATH=.ssh/"${VM_NAME}.key"
-openstack keypair create $VM_NAME >> $KEY_PATH
+VM_NAME="calpuff_${FLAVOR/./_}_${HASH}";
+FILE_PATH=.ssh/"${VM_NAME}.key";
+openstack keypair create $VM_NAME >> $FILE_PATH
 chmod 600 .ssh/"${VM_NAME}.key"
+
+# copy keys for rodos user
+RODOS_PATH="/home/rodos/cloud"
+cp .ssh/"${VM_NAME}.key" $RODOS_PATH
+printf "copy $VM_NAME ssh key to $RODOS_PATH\n"
 
 while true; do
    nova boot --flavor $FLAVOR\
@@ -32,30 +35,15 @@ while true; do
      SYSTEM=`openstack server list | grep $VM_NAME | awk '{ print $10 $11 }'`
 
      if [ "x$STATUS" = "xACTIVE" ]; then
-       printf "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
-       printf "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n"
-       echo -e "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n" >> vm_launching.log
-       echo "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM" >> vm_launching.log
-       exit
+	     printf "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
+      	     printf "To connect use: ssh -i $FILE_PATH ubuntu@$IP\n"
+       	     echo "To connect use: ssh -i $FILE_PATH ubuntu@$IP" >> vm_launching.log
+      	     echo -e "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n" >> vm_launching.log
+	     echo -e "{\n   "ip":"$IP",\n   "key":"$VM_NAME"\n}" > "$RODOS_PATH/config.json"
+             printf "Copied config.json to $RODOS_PATH\n"
+     	     exit
      fi
    done
-   echo "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM" >> vm_launching.log
+   printf "Trying to delete VM $VM_NAME with $STATUS status, IP address $IP, system $SYSTEM\n"
    openstack server delete `openstack server list | grep $VM_NAME | awk '{ print $2 }'`
 done
-
-# copy keys for rodos user
-
-RODOS_PATH="/home/rodos/cloud"
-
-cp .ssh/"${VM_NAME}.key" $RODOS_PATH
-
-json=$(cat <<-END
-
-{
-   "ip":"$IP",
-   "key":"$VM_NAME"
-}
-END
-)
-
-echo -e "$json" > "$RODOS_PATH/config.json" # replace config.json file
