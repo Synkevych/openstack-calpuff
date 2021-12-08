@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e # exit on the first error
-
 . WRF-UNG.rc
 
 HASH=`date --utc +%Y%m%d%H%M`; FLAVOR="m1.large"; TIMER=60
@@ -12,7 +11,8 @@ openstack keypair create $VM_NAME >> $FILE_PATH
 chmod 600 .ssh/"${VM_NAME}.key"
 
 # copy keys for rodos user
-RODOS_PATH="/home/rodos/cloud"
+RODOS_PATH=$(pwd)
+
 cp .ssh/"${VM_NAME}.key" $RODOS_PATH
 printf "copy $VM_NAME ssh key to $RODOS_PATH\n"
 
@@ -33,13 +33,13 @@ while true; do
      STATUS=`openstack server list | grep $VM_NAME | awk '{ print $6 }'`
      IP=`openstack server list | grep $VM_NAME | awk '{ split($8, v, "="); print v[2]}'`
      SYSTEM=`openstack server list | grep $VM_NAME | awk '{ print $10 $11 }'`
-
+    
      if [ "x$STATUS" = "xACTIVE" ]; then
 	     printf "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
       	     printf "To connect use: ssh -i $FILE_PATH ubuntu@$IP\n"
-       	     echo "To connect use: ssh -i $FILE_PATH ubuntu@$IP" >> vm_launching.log
-      	     echo -e "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n" >> vm_launching.log
-	     echo -e "{\n   "ip":"$IP",\n   "key":"$VM_NAME"\n}" > "$RODOS_PATH/config.json"
+      	     echo -e "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n" >> launching.log
+       	     echo "To connect use: ssh -i $FILE_PATH ubuntu@$IP" >> launching.log
+	     echo -e "{\n   \"ip\":\"$IP\",\n   \"key\":\"$VM_NAME\",\n   \"status\":\"active\"\n}" > "$RODOS_PATH/config.json"
              printf "Copied config.json to $RODOS_PATH\n"
      	     exit
      fi
