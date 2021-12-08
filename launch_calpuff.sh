@@ -11,10 +11,10 @@ openstack keypair create $VM_NAME >> $FILE_PATH
 chmod 600 .ssh/"${VM_NAME}.key"
 
 # copy keys for rodos user
-RODOS_PATH=$(pwd)
+VM_PATH=$(pwd)
 
-cp .ssh/"${VM_NAME}.key" $RODOS_PATH
-printf "copy $VM_NAME ssh key to $RODOS_PATH\n"
+cp .ssh/"${VM_NAME}.key" $VM_PATH
+printf "copy $VM_NAME ssh key to $VM_PATH\n"
 
 while true; do
    nova boot --flavor $FLAVOR\
@@ -39,8 +39,8 @@ while true; do
       	     printf "To connect use: ssh -i $FILE_PATH ubuntu@$IP\n"
       	     echo -e "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n" >> launching.log
        	     echo "To connect use: ssh -i $FILE_PATH ubuntu@$IP" >> launching.log
-	     echo -e "{\n   \"ip\":\"$IP\",\n   \"key\":\"$VM_NAME\",\n   \"status\":\"active\"\n}" > "$RODOS_PATH/config.json"
-             printf "Copied config.json to $RODOS_PATH\n"
+	     echo -e "{\n   \"ip\":\"$IP\",\n   \"key\":\"$VM_NAME\",\n   \"status\":\"active\"\n}" > "$VM_PATH/config.json"
+             printf "Copied config.json to $VM_PATH\n"
      	     exit
      fi
    done
