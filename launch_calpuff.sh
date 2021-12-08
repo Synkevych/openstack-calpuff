@@ -1,18 +1,17 @@
 #!/bin/bash
 
+set -e # exit on the first error
+
+. WRF-UNG.rc # load openstack environment variables
+
 HASH=`date --utc +%Y%m%d%H%M`
 FLAVOR="m1.large"
 VM_NAME="calpuff_${FLAVOR/./_}_${HASH}"
-
-FILE_PATH=.ssh/"${VM_NAME}.key"
-openstack keypair create $VM_NAME >> $FILE_PATH
-chmod 600 .ssh/"${VM_NAME}.key"
-
-cp .ssh/"${VM_NAME}.key" $RODOS_PATH
-
 TIMER=60
 
-. WRF-UNG.rc
+KEY_PATH=.ssh/"${VM_NAME}.key"
+openstack keypair create $VM_NAME >> $KEY_PATH
+chmod 600 .ssh/"${VM_NAME}.key"
 
 while true; do
    nova boot --flavor $FLAVOR\
@@ -34,8 +33,8 @@ while true; do
 
      if [ "x$STATUS" = "xACTIVE" ]; then
        printf "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
-       printf "To connect use: ssh -i $FILE_PATH ubuntu@$IP\n"
-       echo -e "To connect use: ssh -i $FILE_PATH ubuntu@$IP\n" >> vm_launching.log
+       printf "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n"
+       echo -e "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n" >> vm_launching.log
        echo "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM" >> vm_launching.log
        exit
      fi
@@ -58,3 +57,5 @@ json=$(cat <<-END
 }
 END
 )
+
+echo -e "$json" > "$RODOS_PATH/config.json" # replace config.json file
