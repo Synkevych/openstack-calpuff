@@ -3,6 +3,7 @@
 set -e # exit on the first error
 
 . WRF-UNG.rc
+mkdir -p .ssh
 
 HASH=`date --utc +%Y%m%d%H%M`;
 FLAVOR="m1.large";
@@ -12,9 +13,6 @@ VM_NAME="calpuff_${FLAVOR/./_}_${HASH}";
 KEY_PATH=.ssh/"${VM_NAME}.key";
 openstack keypair create $VM_NAME >> $KEY_PATH
 chmod 600 .ssh/"${VM_NAME}.key"
-
-cp .ssh/"${VM_NAME}.key" . 
-printf "Create $VM_NAME ssh key\n"
 
 while true; do
    nova boot --flavor $FLAVOR\
@@ -35,7 +33,7 @@ while true; do
      SYSTEM=`openstack server list | grep $VM_NAME | awk '{ print $10 $11 }'`
          
      if [ "x$STATUS" = "xACTIVE" ]; then
-             printf "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
+             printf "Ins $VM_NAME is $STATUS, IP address $IP, system $SYSTEM\n"
              printf "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n"
              echo "VM $VM_NAME is $STATUS, IP address $IP, system $SYSTEM" >> launching.log
              echo -e "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n" >> launching.log
