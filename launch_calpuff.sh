@@ -5,7 +5,7 @@ TIME=$(date "+%d.%m.%Y-%H:%M:%S")
 . Ansible_envs
 mkdir -p .ssh
 
-HASH=`date --utc +%Y%m%d%H%M`;
+HASH=`date --utc +%d%m%Y%H%M`;
 FLAVOR="m1.large";
 IMAGE="3bfdbb3f-e4e8-428c-b758-75a1dd366f0d";
 TIMER=10;
@@ -36,7 +36,7 @@ while true; do
      SYSTEM=`openstack server list | grep $HOSTNAME | awk '{ print $10 }'`
 
      if [ "x$STATUS" = "xACTIVE" ]; then
-	     printf "VM $HOSTNAME is $STATUS, IP address $IP, image $SYSTEM\n"
+	     printf "VM $HOSTNAME has status $STATUS, IP address $IP, image $SYSTEM\n"
       	     printf "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n"
       	     echo "$TIME VM $HOSTNAME is $STATUS, IP address $IP, image $SYSTEM" >> launching.log
        	     echo -e "$TIME To connect use: ssh -i $KEY_PATH ubuntu@$IP\n" >> launching.log
