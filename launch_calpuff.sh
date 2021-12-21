@@ -47,4 +47,5 @@ while true; do
    echo -e "{\n   \"hostname\":\"$VM_NAME\",\n   \"ip\":\"$IP\",\n   \"status\":\"error\"\n}" > config.json
    printf "Launching $HOSTNAME failed with status: $STATUS"
    echo -e "$TIME Launching $HOSTNAME failed with status: $STATUS\n" >> launching.log
+   exit
 done
