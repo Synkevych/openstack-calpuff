@@ -27,4 +27,6 @@ echo "$TIME Openstak keypair for $VM_NAME deleted" >> launching.log
 openstack server delete ${VM_NAME}
 echo -e "$TIME Openstack server $VM_NAME deleted\n" >> launching.log
 
-sed -i 's/active/deleted/g' config.json
+echo -e "{\n   \"hostname\":\"$VM_NAME\",\n   \"status\":\"deleted\"\n}" > config.json
+
+echo "VM $VM_NAME and it keys successfully removed"
