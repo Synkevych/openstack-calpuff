@@ -1,8 +1,10 @@
 #!/bin/bash
 
-TIME=$(date "+%d.%m.%Y-%H:%M:%S")
+TIME=$(date "+%d.%m.%y-%H:%M:%S")
 
 . Ansible_envs
+OLD_VM_NAME=`cat config.json | grep calpuff_ | cut -d : -f2 | awk -F\" '{print $2}'`
+
 mkdir -p .ssh
 
 HASH=`date --utc +%d%m%Y%H%M`;
@@ -24,12 +26,8 @@ while true; do
 	   --security-groups d134acb2-e6bc-4c82-a294-9617fdf7bf07\
 	   $HOSTNAME 2>/dev/null
    for i in `seq 1 3`; do
-      sec=$TIMER
-      while [ $sec -ge 0 ]; do
-	      echo -ne "$i attempt to start VM: $sec\033[0K\r"
-              let "sec=sec-1"
-              sleep 1
-      done
+     echo -ne "$i attempt to start VM \033[0K\r"
+     sleep $TIMER & wait
 
      STATUS=`openstack server list | grep $HOSTNAME | awk '{ print $6 }'`
      IP=`openstack server list | grep $HOSTNAME | awk '{ split($8, v, "="); print v[2]}'`
@@ -44,7 +42,7 @@ while true; do
      	     exit
      fi
    done
-   echo -e "{\n   \"hostname\":\"$HOSTNAME\",\n   \"ip\":\"$IP\",\n   \"status\":\"error\"\n}" > config.json
+   echo -e "{\n   \"hostname\":\"$HOSTNAME\",\n   \"status\":\"error\"\n}" > config.json
    printf "Launching $HOSTNAME failed with status: $STATUS"
    echo -e "$TIME Launching $HOSTNAME failed with status: $STATUS\n" >> launching.log
    exit
