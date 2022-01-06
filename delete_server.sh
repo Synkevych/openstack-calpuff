@@ -18,14 +18,15 @@ fi
 
 echo "VM $VM_NAME found, starting removing"
 
-rm ".ssh/${VM_NAME}.key"
-echo "$TIME SSH key for $VM_NAME deleted" >> launching.log
+openstack server delete ${VM_NAME}
+sleep 10 & wait
+echo -e "$TIME Openstack server $VM_NAME deleted\n" >> launching.log
 
 openstack keypair delete ${VM_NAME}
 echo "$TIME Openstak keypair for $VM_NAME deleted" >> launching.log
 
-openstack server delete ${VM_NAME}
-echo -e "$TIME Openstack server $VM_NAME deleted\n" >> launching.log
+rm ".ssh/${VM_NAME}.key"
+echo "$TIME SSH key for $VM_NAME deleted" >> launching.log
 
 echo -e "{\n   \"hostname\":\"$VM_NAME\",\n   \"status\":\"deleted\"\n}" > config.json
 
