@@ -7,9 +7,9 @@ TIME=$(date "+%d.%m.%y-%H:%M:%S")
 ACTIVE_VM_NAME=`nova list 2>/dev/null | grep flexpart_8cpu | awk '{ print $4 }'`
 ACTIVE_VM_STATUS=`nova list 2>/dev/null | grep calpuff_ | awk '{ print $6 }'`
 
-if [ "$ACTIVE_VM_NAME" = "ACTIVE" ]; then
-        echo "Active VM $VM_NAME, trying to remove them before starting a new one\n"
-        echo -e "$TIME Active VM $ACTIVE_VM_NAME found, trying to remove them before starting a new one" >> launching.log
+if [ "$ACTIVE_VM_STATUS" = "ACTIVE" ]; then
+        echo "Active VM $ACTIVE_VM_NAME, trying to remove them before starting a new one"
+        echo "$TIME Active VM $ACTIVE_VM_NAME found, trying to remove them before starting a new one" >> launching.log
 	sleep 120 & wait
 	./delete_server.sh $ACTIVE_VM_NAME
 fi
