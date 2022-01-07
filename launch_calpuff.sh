@@ -2,10 +2,17 @@
 
 TIME=$(date "+%d.%m.%y-%H:%M:%S")
 
-. Ansible_envs
-OLD_VM_NAME=`cat config.json | grep calpuff_ | cut -d : -f2 | awk -F\" '{print $2}'`
+. Ansible_envs; mkdir -p .ssh
 
-mkdir -p .ssh
+ACTIVE_VM_NAME=`nova list 2>/dev/null | grep flexpart_8cpu | awk '{ print $4 }'`
+ACTIVE_VM_STATUS=`nova list 2>/dev/null | grep calpuff_ | awk '{ print $6 }'`
+
+if [ "$ACTIVE_VM_NAME" = "ACTIVE" ]; then
+        echo "Active VM $VM_NAME, trying to remove them before starting a new one\n"
+        echo -e "$TIME Active VM $ACTIVE_VM_NAME found, trying to remove them before starting a new one" >> launching.log
+	sleep 120 & wait
+	./delete_server.sh $ACTIVE_VM_NAME
+fi
 
 HASH=`date --utc +%d%m%Y%H%M`;
 FLAVOR="m1.large";
@@ -38,7 +45,7 @@ while true; do
       	     printf "To connect use: ssh -i $KEY_PATH ubuntu@$IP\n"
       	     echo "$TIME VM $HOSTNAME is $STATUS, IP address $IP, image $SYSTEM" >> launching.log
        	     echo -e "$TIME To connect use: ssh -i $KEY_PATH ubuntu@$IP\n" >> launching.log
-	           echo -e "{\n   \"hostname\":\"$HOSTNAME\",\n   \"ip\":\"$IP\",\n   \"status\":\"active\"\n}" > config.json
+	     echo -e "{\n   \"hostname\":\"$HOSTNAME\",\n   \"ip\":\"$IP\",\n   \"status\":\"active\"\n}" > config.json
      	     exit
      fi
    done
